@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<Wizard>
+  <Section Title="Home">
+    <Loop Title="Income Loop">
+      <Page Title="Employer Income" Value="54"/>
+      <Page Title="Parttime Job Income"/>
+      <Page Title="Self employment Income"/>
+    </Loop>
+  </Section>
+  <Section Title="Deductions" Value="76">
+    <Loop Title="Deductions Loop" Value="2">
+      <Page Title="Travel spending" Value="45"/>
+      <Page Title="Charity spending"/>
+      <Page Title="Dependents"/>
+    </Loop>
+  </Section>
+</Wizard>

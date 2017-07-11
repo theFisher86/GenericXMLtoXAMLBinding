@@ -1,0 +1,92 @@
+﻿<Window x:Class="GenericXMLtoXAMLBinding.TreeViewer2"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:GenericXMLtoXAMLBinding"
+    Title="TreeViewer2" Height="300" Width="300">
+    <Window.Resources>
+        <local:IsEqualOrGreaterThanConverter x:Key="EqualOrGreaterThan"/>
+        <local:MBINReferenceConverter x:Key="MBINReferenceConverter"/>
+        <HierarchicalDataTemplate x:Key="NodeTemplate">
+            <StackPanel Orientation="Horizontal">
+                <Label x:Name="label" Content="Label.Content" />
+                <TextBox x:Name="text" Text="TextBox.text"/>
+            </StackPanel>
+
+            <HierarchicalDataTemplate.ItemsSource>
+                <Binding XPath="child::node()" />
+            </HierarchicalDataTemplate.ItemsSource>
+            
+            <HierarchicalDataTemplate.Triggers>
+                
+                <!-- This is just if the NodeType is text... shouldn't apply to anything in the NMS exml files but was here for an example.-->
+                <DataTrigger Binding="{Binding Path=NodeType}" Value="Text">
+                    <Setter TargetName="text"
+                            Property="Text"
+                            Value="{Binding Path=Value}"/>
+                    <Setter TargetName="label" Property="Content" Value="{Binding Path=Attributes[name].value}"/>
+                </DataTrigger>
+
+                <!-- This is the default DataTrigger for any Element NodeTypes.  Should apply to most cases.-->
+                <DataTrigger Binding="{Binding Path=NodeType}" Value="Element">
+                    <Setter TargetName="label"
+                            Property="Content"
+                            Value="{Binding Path=Attributes[name]}" />
+                    <Setter TargetName="text" Property="Text" Value="{Binding Path=Attributes[value].Value}"/>
+                </DataTrigger>
+                
+                <!-- This is an example of a MultiDataTrigger.  It checks to see if the Node is both an element and is named Data.  If so it labels it TopLevel -->
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=Name}" Value="Data"/>
+                        <Condition Binding="{Binding Path=NodeType}" Value="Element"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="label" Property="Content" Value="TopLevel"/>
+                </MultiDataTrigger>
+                
+                <!-- A more complex MultiDataTrigger. -->
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=NodeType}" Value="Element"/>
+                        <Condition Binding="{Binding Path=Attributes[name]}" Value="MaxSpeed"/>
+                        <Condition Binding="{Binding Path=Attributes[value], Converter={x:Static IsEqualOrGreaterThanConverter.Instance}, ConverterParameter=50}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="text" Property="FontWeight" Value="Bold"/>
+                </MultiDataTrigger>
+
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=NodeType}" Value="Element" />
+                        <Condition Binding="{Binding Path=Attributes[value], Converter={x:Static MBINReferenceConverter.Instance}}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="text" Property="FontWeight" Value="Bold"/>
+                </MultiDataTrigger>
+
+            </HierarchicalDataTemplate.Triggers>
+
+        </HierarchicalDataTemplate>
+        
+        
+        <Style x:Key="TextBoxStyle" TargetType="{x:Type TextBox}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Attributes[Value]}" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Hidden"/>
+                </DataTrigger>
+            </Style.Triggers>
+            <Style.Setters>
+                <Setter Property="Visibility" Value="Visible"/>
+            </Style.Setters>
+        </Style>
+
+        <XmlDataProvider x:Key="xmlDataProvider"/>
+
+    </Window.Resources>
+
+
+    <Grid>
+        <TreeView Name="treeView1"
+                  Background="AliceBlue"
+                  ItemsSource="{Binding Source={StaticResource xmlDataProvider}, XPath=*}"
+                  ItemTemplate="{StaticResource NodeTemplate}" />
+
+    </Grid>
+</Window>
